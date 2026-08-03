@@ -19,7 +19,19 @@ export default function Home() {
   }
 
   useEffect(() => {
-    loadTasks();
+    let ignore = false;
+
+    async function load() {
+      const res = await fetch(`/api/tasks?sort=${sort}`);
+      const data = await res.json();
+      if (!ignore) setTasks(data); // only apply if this effect run hasn't been superseded
+    }
+
+    load();
+
+    return () => {
+      ignore = true; // runs before the *next* effect fires, or on unmount
+    };
   }, [sort]);
 
   async function handleCreate(e) {
